@@ -10,7 +10,7 @@ public class UI_Script : MonoBehaviour
     private int maxHeight;
     private JSONUser[] users;
     private JsonRoot jsonRoot;
-    private bool[] btnsClicked;
+    int userSelectedId = -1;
 
     void OnGUI()
     {
@@ -29,15 +29,17 @@ public class UI_Script : MonoBehaviour
         GUILayout.Label("User email");
         GUILayout.FlexibleSpace();
         GUILayout.Label("Status");
+        GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
         if (users != null)
         {
-            btnsClicked = new bool[users.Length];
             for (int i = 0; i < users.Length; i++)
             {
                 GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.UpperLeft });
                 GUILayout.FlexibleSpace();
-                btnsClicked[i] = GUILayout.Button(users[i].name, "Label");
+                bool clicked = GUILayout.Button(users[i].name, "Label");
+                if (clicked)
+                    userSelectedId = i;
                 GUILayout.FlexibleSpace();
                 GUILayout.Label(users[i].email);
                 GUILayout.FlexibleSpace();
@@ -50,42 +52,39 @@ public class UI_Script : MonoBehaviour
         #endregion
 
         #region Second Box for Projects
-        GUI.Box(new Rect(5, maxHeight / 2 - 10, (maxWidth - 10), (maxHeight - 10) / 2), "Projects");
+        GUI.Box(new Rect(5, (maxHeight / 3) * 2 - 20, (maxWidth - 10), (maxHeight - 20) / 3), "Projects");
 
-        GUILayout.BeginArea(new Rect(5, maxHeight / 2, (maxWidth - 10), (maxHeight - 10) / 2));
+        GUILayout.BeginArea(new Rect(5, (maxHeight / 3) * 2, (maxWidth - 10), (maxHeight) / 3));
 
         GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.MiddleCenter });
         GUILayout.FlexibleSpace();
         GUILayout.Label("Project name");
         GUILayout.FlexibleSpace();
         GUILayout.Label("PM name");
+        GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
-        if (users != null)
+        if (users != null && userSelectedId != -1)
         {
-            for (int i = 0; i < btnsClicked.Length; i++)
+            foreach (JSONProject p in users[userSelectedId].clients_projects)
             {
-                if (btnsClicked[i] == true)
-                {
-                    foreach (JSONProject p in users[i].clients_projects)
-                    {
-                        GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Label(p.name);
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Label(p.project_manager.name);
-                        GUILayout.EndHorizontal();
-                    }
+                GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(p.name);
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(p.project_manager.name);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+            }
 
-                    foreach (JSONProject p in users[i].pm_projects)
-                    {
-                        GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.MiddleCenter });
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Label(p.name);
-                        GUILayout.FlexibleSpace();
-                        GUILayout.Label(p.project_manager.name);
-                        GUILayout.EndHorizontal();
-                    }
-                }
+            foreach (JSONProject p in users[userSelectedId].pm_projects)
+            {
+                GUILayout.BeginHorizontal(new GUIStyle() { alignment = TextAnchor.MiddleCenter });
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(p.name);
+                GUILayout.FlexibleSpace();
+                GUILayout.Label(p.project_manager.name);
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
             }
         }
         GUILayout.EndArea();
@@ -96,7 +95,7 @@ public class UI_Script : MonoBehaviour
     }
 
     #region GET
-       private IEnumerator getUnityWebRequest()
+    private IEnumerator getUnityWebRequest()
     {
         string url = "http://polinaliola.000webhostapp.com/api/data";
         UnityWebRequest www = UnityWebRequest.Get(url);
@@ -123,6 +122,7 @@ public class UI_Script : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        //Camera.main.orthographicSize = Mathf.Max(Screen.width, Screen.height) / 2;
         // StartCoroutine(getWWW());
         StartCoroutine(getUnityWebRequest());
     }
